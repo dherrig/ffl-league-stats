@@ -2,7 +2,7 @@
     "editor.tabSize": 2,
     "editor.indentSize": "tabSize",
     "editor.rulers": [120],
-    "pylint.args": ["--indent-string='  '", "--max-line-length=120"],
+    "pylint.args": ["--indent-string='  '", "--max-line-length=120", "disable=logging-fstring-interpolation"],
     "flake8.args": ["--max-line-length=120", "--indent-size=2"],
     "files.trimTrailingWhitespace": true
 }
