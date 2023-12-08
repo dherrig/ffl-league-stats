@@ -7,7 +7,6 @@ import math
 import sys
 from collections import defaultdict
 import tqdm
-import warnings
 
 import pandas as pd
 import yahoo
@@ -41,7 +40,7 @@ def main(argv=None):
   print('ALL RECORDS:')
   for team_key_i in all_records.keys():
     print(teams_df.loc[team_key_i])
-    print_records_dict(all_records[team_key_i])
+    print_records_dict(all_records[team_key_i], num_weeks)
 
 
 def dfs_from_yahoo(yh_teams: list[yahoo.YahooTeamResource], maxweek=None):
