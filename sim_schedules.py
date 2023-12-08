@@ -4,12 +4,17 @@ import argparse
 import functools
 import itertools
 import math
+import multiprocessing
 import sys
 from collections import defaultdict
 import tqdm
+from tqdm.contrib.concurrent import process_map
 
 import pandas as pd
 import yahoo
+
+
+MAX_PROCESSES = multiprocessing.cpu_count()
 
 
 def main(argv=None):
@@ -123,6 +128,25 @@ class ScheduleSimmer:
           all_records[team_i_key][record_j] += 1
           if j % 100 == 0:
             pbar.update(100)
+      print(team_i_key)
+      print_records_dict(all_records[team_i_key], self.nweeks)
+    return all_records
+
+  def simulate_all_schedules_poolseasons(self, team_keys: list[str]) -> dict:
+    """Simulate all schedules, but run multiple seasons in parallel"""
+    all_records = {x: defaultdict(int) for x in team_keys}
+    total_schedules = math.factorial(self.nteams - 1)
+    tqdm.tqdm.set_lock(multiprocessing.RLock())
+    for team_i_key in team_keys:
+      all_schedules_iter = permute_schedules(team_i_key, team_keys)
+      print(f'Simulating {total_schedules} schedules for team {team_i_key} using process_map')
+
+      # _get_record = lambda x: self.compute_record(team_i_key, x)
+      p = multiprocessing.Pool()
+      with multiprocessing.Pool(MAX_PROCESSES) as p:
+        records_lst = list(tqdm.tqdm(p.imap(functools.partial(self.compute_record, team_i_key), all_schedules_iter), total=total_schedules))
+      # records_lst = process_map(functools.partial(self.compute_record, team_i_key), all_schedules_iter, max_workers=MAX_PROCESSES, total=total_schedules)
+      all_records[team_i_key] = {k: records_lst.count(k) for k in set(records_lst)}
       print(team_i_key)
       print_records_dict(all_records[team_i_key], self.nweeks)
     return all_records
